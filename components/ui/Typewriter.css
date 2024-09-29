@@ -1,0 +1,26 @@
+/* Add styles for the blinking cursor */
+.animate-typing {
+  position: relative;
+  display: inline-block;
+}
+
+.animate-typing::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  height: 1em;
+  background-color: orange;
+  animation: blink-caret 0.5s step-end infinite;
+}
+
+/* The typewriter cursor effect */
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: orange;
+  }
+}

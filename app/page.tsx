@@ -1,139 +1,146 @@
 "use client";
-import React from "react";
-import Head from "next/head";
-import Link from "next/link";
-import { Code, Rocket, Heart, Github } from "lucide-react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { motion } from 'framer-motion';
+import { FaCode, FaRocket } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, useGLTF, useFBX, useAnimations, PerspectiveCamera, RandomizedLight } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from 'framer-motion'; // Correctly import motion from framer-motion
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import * as THREE from 'three';
 
-export default function Home() {
+function Player({ isMobile }) {
+  const group = useRef();
+  const { nodes, materials, scene } = useGLTF("/assets/3D/player.gltf");
+  const { animations } = useFBX("/assets/3D/standing-greeting.fbx");
+  const { actions } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (actions["mixamo.com"]) {
+      actions["mixamo.com"].reset().play();
+    }
+  }, [actions]);
+
   return (
     <>
-      <Head>
-        <title>Bounty Code</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap"
-          rel="stylesheet"
+      <ambientLight intensity={0.5} />
+      {/* Camera adjustments */}
+      <PerspectiveCamera
+        makeDefault
+        position={[0, 40, -40]}
+        fov={30}
+        near={1}
+        far={120}
+        zoom={isMobile ? 2 : 3}
+      />
+      <RandomizedLight position={[0, 1, 0]} />
+      <pointLight intensity={2} position={[1, 1.5, 0]} color="#804dee" />
+      <pointLight intensity={2} position={[-1, 1.5, 1]} color="#4b42a7" />
+      <pointLight intensity={2} position={[-1, 0.5, 1]} color="#804dee" />
+      {!isMobile && (
+        <OrbitControls
+          makeDefault
+          enableZoom={false}
+          maxPolarAngle={Math.PI / 2}
+          minPolarAngle={Math.PI / 2}
+          enableDamping={true}
+          dampingFactor={0.05}
+          enablePan={false}
+          autoRotate={false}
         />
-      </Head>
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-indigo-700 to-blue-500 text-white overflow-hidden">
-        {/* Header with animation */}
-        <header className="py-8 text-center relative z-10">
-          <motion.h1
-            className="font-bold text-6xl md:text-7xl lg:text-8xl"
-            initial={{ opacity: 0, y: -50 }} // Initial state
-            animate={{ opacity: 1, y: 0 }} // Animate to this state
-            transition={{ duration: 0.5 }} // Animation duration
-          >
-            <a>Bounty Code</a>
-          </motion.h1>
-        </header>
+      )}
 
-        {/* Main Section */}
-        <main className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="max-w-2xl mx-auto text-center mb-12"
-            initial={{ opacity: 0, scale: 0.5 }} // Initial state
-            animate={{ opacity: 1, scale: 1 }} // Animate to this state
-            transition={{ duration: 0.5 }} // Animation duration
-          >
-            <h2 className="text-4xl font-bold mb-4">
-              Learn to code with fun challenges!
-            </h2>
-            <p className="text-xl mb-6">
-              Join our community of learners and start your coding journey today!
-            </p>
-            <div className="flex justify-center space-x-4 mb-8">
-              <div>
-                <Code size={40} />
-              </div>
-              <div>
-                <Rocket size={40} />
-              </div>
-              <div>
-                <Heart size={40} />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Auth Tabs */}
-          <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md border-none">
-            <Tabs defaultValue="login">
-              <TabsList className="grid w-full grid-cols-3 bg-white/20">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                <TabsTrigger value="forgot">Forgot</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <CardHeader>
-                  <CardTitle>Login</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
-                    Enter your credentials to access your account.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
-                  <Input type="password" placeholder="Password" className="bg-white/30" />
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800">Login</Button>
-                </CardFooter>
-              </TabsContent>
-              <TabsContent value="signup">
-                <CardHeader>
-                  <CardTitle>Sign Up</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
-                    Create a new account to get started.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input type="text" placeholder="Username" className="bg-white/30" />
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
-                  <Input type="password" placeholder="Password" className="bg-white/30" />
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800">Sign Up</Button>
-                </CardFooter>
-              </TabsContent>
-              <TabsContent value="forgot">
-                <CardHeader>
-                  <CardTitle>Forgot Password</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
-                    Enter your email to reset your password.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800">Reset Password</Button>
-                </CardFooter>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Get Started Button */}
-          <div className="text-center mt-12">
-            <Link href="/lobby" passHref>
-              <Button size="lg" className="bg-purple-700 hover:bg-purple-800 text-xl px-8 py-6">
-                Get Started
-                <Rocket className="ml-2" size={24} />
-              </Button>
-            </Link>
-          </div>
-
-          {/* Footer */}
-          <footer className="mt-16 text-center text-sm opacity-75">
-            <p>© 2024 Bounty Code. All rights reserved.</p>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center mt-2 hover:text-purple-300">
-              <Github size={16} className="mr-1" /> Find us on GitHub
-            </a>
-          </footer>
-        </main>
-      </div>
+      {/* Adjust the model's position and scale */}
+      <group ref={group} position={[0, -2, 0]} rotation={[0, 0, 0]} scale={1.15}>
+      <primitive
+          object={scene}
+          ref={group}
+          rotation={[0, Math.PI, 0]}
+          position={isMobile ? [0, -3, 0] : [0, -2, 0]}
+          scale={isMobile ? 2 : 4}
+        />
+      </group>
     </>
+  );
+}
+
+
+
+function PlayerCanvas({ isMobile }) {
+  return (
+    <Canvas
+      dpr={[1, 2]}
+      gl={{
+        outputColorSpace: THREE.SRGBColorSpace,
+        alpha: true,
+      }}
+    >
+      <Player isMobile={isMobile} />
+    </Canvas>
+  );
+}
+
+export default function Home() {
+  const router = useRouter();
+
+  return (
+    <div className="min-h-screen flex  text-white overflow-hidden">
+  {/* 3D Model Section */}
+  <div className="w-1/2 h-screen flex items-center justify-center">
+    <PlayerCanvas isMobile={false} />
+  </div>
+
+  {/* Content Section */}
+  <div className="w-1/2 flex items-center justify-center p-8">
+  <Card className="w-full max-w-2xl bg-white/10 backdrop-blur-lg border-none text-white">
+
+      <CardHeader>
+        <CardTitle className="text-4xl font-bold text-center">Bounty Code</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <motion.p
+          className="text-xl text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          Learn to code with fun challenges!
+        </motion.p>
+
+        <motion.div
+          className="flex justify-center space-x-4"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <FaCode size={50} className="text-yellow-300" />
+          <FaRocket size={50} className="text-red-400" />
+        </motion.div>
+
+        <motion.div
+          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          <Button
+            className="w-full bg-purple-500 hover:bg-purple-600 transition-all duration-300 py-6 text-lg font-semibold"
+            onClick={() => router.push("/auth/login")}
+          >
+            Go to Lobby
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full bg-transparent hover:bg-white/20 transition-all duration-300 py-6 text-lg font-semibold"
+            onClick={() => router.push("/auth/register")}
+          >
+            Sign Up
+          </Button>
+        </motion.div>
+      </CardContent>
+    </Card>
+  </div>
+</div>
+
   );
 }

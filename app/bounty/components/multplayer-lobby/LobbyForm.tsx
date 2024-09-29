@@ -1,51 +1,64 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LobbyFormProps {
-  onLobbyCreated: (code: string, initialChallenge: any) => void;
+  onLobbyCreated: (code: string, settings: LobbySettings) => void;
+}
+
+interface LobbySettings {
+  difficulty: string;
+  members: number;
+  timeLimit: number;
+  numberOfQuestions: number;
 }
 
 const LobbyForm: React.FC<LobbyFormProps> = ({ onLobbyCreated }) => {
-  const [difficulty, setDifficulty] = useState('');
+  const [difficulty, setDifficulty] = useState('easy');
   const [members, setMembers] = useState(1);
-  const [timeLimit, setTimeLimit] = useState(10); // Default time limit in minutes
+  const [timeLimit, setTimeLimit] = useState(10);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
+      const settings: LobbySettings = {
+        difficulty,
+        members,
+        timeLimit,
+        numberOfQuestions,
+      };
+
       const response = await fetch('/api/groqAssistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          gameState: {
-            chapter: 1,
-            score: 0,
-            theme: 'space mission', // You can make this dynamic if needed
-          },
-          playerAction: 'start_game',
-          settings: {
-            difficulty,
-            members,
-            timeLimit,
-          },
+          playerAction: 'create_lobby',
+          settings,
+          aiPrompt: `Create challenges with ${settings.difficulty} difficulty and ${settings.numberOfQuestions} questions.`,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create lobby');
+      if (response.ok) {
+        const data = await response.json();
+        onLobbyCreated(data.lobbyCode, settings);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create lobby');
       }
-
-      const data = await response.json();
-      const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase(); // Simple code generation
-      onLobbyCreated(generatedCode, data.challenges[0]);
     } catch (error) {
       console.error('Error creating lobby:', error);
-      // Handle error (e.g., show error message to user)
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -54,55 +67,70 @@ const LobbyForm: React.FC<LobbyFormProps> = ({ onLobbyCreated }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="difficulty" className="block text-sm font-medium text-foreground">
-          Difficulty Level
+        <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
+          Difficulty
         </label>
-        <select
+        <Select
           id="difficulty"
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value)}
-          className="mt-1 block w-full p-2 border rounded-md bg-background text-foreground"
-          required
+          className="mt-1 block w-full"
         >
-          <option value="">Select difficulty</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </Select>
       </div>
 
       <div>
-        <label htmlFor="members" className="block text-sm font-medium text-foreground">
-          Number of Members
+        <label htmlFor="members" className="block text-sm font-medium text-gray-700">
+          Number of Players
         </label>
-        <input
-          type="number"
+        <Input
           id="members"
+          type="number"
           value={members}
           onChange={(e) => setMembers(Number(e.target.value))}
           min="1"
-          max="4"
-          className="mt-1 block w-full p-2 border rounded-md bg-background text-foreground"
-          required
+          className="mt-1 block w-full"
         />
       </div>
 
       <div>
-        <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground">
+        <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700">
           Time Limit (minutes)
         </label>
-        <input
-          type="number"
+        <Input
           id="timeLimit"
+          type="number"
           value={timeLimit}
           onChange={(e) => setTimeLimit(Number(e.target.value))}
           min="1"
-          className="mt-1 block w-full p-2 border rounded-md bg-background text-foreground"
-          required
+          className="mt-1 block w-full"
         />
       </div>
 
-      <Button type="submit" disabled={isLoading}>
+      <div>
+        <label htmlFor="numberOfQuestions" className="block text-sm font-medium text-gray-700">
+          Number of Questions
+        </label>
+        <Input
+          id="numberOfQuestions"
+          type="number"
+          value={numberOfQuestions}
+          onChange={(e) => setNumberOfQuestions(Number(e.target.value))}
+          min="1"
+          className="mt-1 block w-full"
+        />
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Creating Lobby...' : 'Create Lobby'}
       </Button>
     </form>

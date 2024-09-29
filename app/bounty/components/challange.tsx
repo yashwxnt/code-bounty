@@ -1,5 +1,4 @@
-'use client';
-
+'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Card,
@@ -14,28 +13,51 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Send, Code, MessageSquare, Users, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Send, Code, MessageSquare, Users, Clock } from 'lucide-react';
 
-const ChallengePage = () => {
+interface LobbySettings {
+  difficulty: string;
+  members: number;
+  timeLimit: number;
+  numberOfQuestions: number;
+}
+
+interface Challenge {
+  storyline: string;
+  code: string;
+  options: string[];
+  hint: string;
+  correctAnswer: number;
+  theme: string;
+}
+
+interface ChallengePageProps {
+  lobbyCode: string;
+  lobbySettings: LobbySettings;
+}
+
+const DEFAULT_TIME_LIMIT = 600; // 10 minutes in seconds
+
+const ChallengePage: React.FC<ChallengePageProps> = ({ lobbyCode, lobbySettings }) => {
   const [gameState, setGameState] = useState({
     chapter: 1,
     score: 0,
     theme: 'space mission',
   });
-  const [challenges, setChallenges] = useState([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(300);
-  const [chatMessages, setChatMessages] = useState([]);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(lobbySettings?.timeLimit ? lobbySettings.timeLimit * 60 : DEFAULT_TIME_LIMIT);
+  const [chatMessages, setChatMessages] = useState<{text: string, sender: string}[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const chatContainerRef = useRef(null);
-  const [leaderboard, setLeaderboard] = useState([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [leaderboard, setLeaderboard] = useState<{name: string, score: number}[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchChallenge();
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
@@ -43,34 +65,52 @@ const ChallengePage = () => {
   }, []);
 
   useEffect(() => {
+    if (lobbySettings) {
+      fetchChallenges();
+    }
+  }, [lobbySettings]);
+
+  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
-  const fetchChallenge = async () => {
+  const fetchChallenges = async () => {
+    if (!lobbySettings) {
+      setError('Lobby settings are not available. Please try again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setError(null);
       const response = await fetch('/api/groqAssistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          gameState,
-          playerAction: 'start_game',
+          playerAction: 'fetch_challenges',
+          settings: lobbySettings,
+          aiPrompt: `Create ${lobbySettings.numberOfQuestions} challenges with ${lobbySettings.difficulty} difficulty.`,
         }),
       });
-
-      if (!response.ok) throw new Error('Failed to fetch challenges');
-
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch challenges: ${response.statusText}`);
+      }
       const data = await response.json();
-      if (!data.challenges || !Array.isArray(data.challenges)) throw new Error('Invalid challenge data received');
-
+      if (!data.challenges || !Array.isArray(data.challenges)) {
+        throw new Error('Invalid challenge data received');
+      }
       setChallenges(data.challenges);
     } catch (error) {
-      console.error('Error fetching challenge:', error);
-      setError('Failed to load challenges. Please try again.');
+      console.error('Error fetching challenges:', error);
+      setError('Failed to fetch challenges. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,6 +118,9 @@ const ChallengePage = () => {
 
   const handleSubmit = async () => {
     if (selectedAnswer === null) return;
+    setIsLoading(true);
+    setError(null);
+    setFeedback(null);
 
     try {
       const response = await fetch('/api/groqAssistant', {
@@ -88,32 +131,41 @@ const ChallengePage = () => {
         body: JSON.stringify({
           gameState: {
             ...gameState,
-            score:
-              gameState.score +
-              (selectedAnswer === challenges[currentChallengeIndex].correctAnswer ? 10 : 0),
+            score: gameState.score + (selectedAnswer === challenges[currentChallengeIndex].correctAnswer ? 10 : 0),
           },
           playerAction: 'submit_answer',
           selectedAnswer,
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to submit answer');
-
+      if (!response.ok) {
+        throw new Error('Failed to submit answer');
+      }
       const data = await response.json();
       setFeedback(data.feedback);
-
-      setCurrentChallengeIndex((prevIndex) => (prevIndex < challenges.length - 1 ? prevIndex + 1 : prevIndex));
-
-      setSelectedAnswer(null);
+      setGameState(prevState => ({
+        ...prevState,
+        score: prevState.score + (selectedAnswer === challenges[currentChallengeIndex].correctAnswer ? 10 : 0),
+      }));
+      
+      if (currentChallengeIndex < challenges.length - 1) {
+        setCurrentChallengeIndex((prevIndex) => prevIndex + 1);
+        setSelectedAnswer(null);
+      } else {
+        // Game over logic here
+        setFeedback("Congratulations! You've completed all challenges.");
+      }
     } catch (error) {
       console.error('Error submitting answer:', error);
       setError('Failed to submit answer. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSendMessage = async () => {
     if (newMessage.trim()) {
-      setChatMessages([...chatMessages, { text: newMessage, sender: 'You' }]);
+      setChatMessages(prevMessages => [...prevMessages, { text: newMessage, sender: 'You' }]);
       setNewMessage('');
 
       try {
@@ -129,10 +181,12 @@ const ChallengePage = () => {
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to send message');
+        if (!response.ok) {
+          throw new Error('Failed to send message');
+        }
 
         const data = await response.json();
-        setChatMessages((prevMessages) => [...prevMessages, { text: data.response, sender: 'AI' }]);
+        setChatMessages(prevMessages => [...prevMessages, { text: data.response, sender: 'AI' }]);
       } catch (error) {
         console.error('Error sending message:', error);
         setError('Failed to send message. Please try again.');
@@ -157,6 +211,34 @@ const ChallengePage = () => {
     );
   }
 
+  if (!lobbySettings) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          Loading game settings...
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          Loading...
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!challenges.length) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -165,7 +247,7 @@ const ChallengePage = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          Loading challenges...
+          No challenges available. Please try again.
         </motion.div>
       </div>
     );
@@ -203,7 +285,7 @@ const ChallengePage = () => {
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span className="text-2xl font-bold">
-                  Chapter {gameState.chapter}: Debug the Code
+                  Question {currentChallengeIndex + 1} of {challenges.length}
                 </span>
                 <Badge variant="secondary" className="text-xl font-bold px-3 py-1">
                   <Clock className="mr-2 h-4 w-4" />
@@ -238,19 +320,23 @@ const ChallengePage = () => {
               <p className="mt-4 text-sm text-gray-600">
                 Hint: {currentChallenge.hint}
               </p>
+              {feedback && (
+                <Alert className="mt-4" variant={feedback.includes('Correct') ? 'default' : 'destructive'}>
+                  <AlertDescription>{feedback}</AlertDescription>
+                </Alert>
+              )}
             </CardContent>
             <CardFooter>
               <Button
                 className="w-full"
                 onClick={handleSubmit}
-                disabled={selectedAnswer === null}
+                disabled={selectedAnswer === null || isLoading}
               >
-                Submit Answer
+                {isLoading ? 'Submitting...' : 'Submit Answer'}
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
-
         <TabsContent value="chat">
           <Card>
             <CardHeader>
