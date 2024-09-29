@@ -1,10 +1,10 @@
 import React from 'react'
-import Projectshowcase from './components/project-showcase'
+import ChallengePage from './components/challange'
 
 function Projects() {
   return (
     <div>
-        <Projectshowcase/>
+        <ChallengePage/>
     </div>
   )
 }
