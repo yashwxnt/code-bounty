@@ -9,13 +9,30 @@
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages",
     "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy",
+    "deploy": "npm run build && npx wrangler pages deploy out",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts"
   },
   "dependencies": {
+    "@radix-ui/react-aspect-ratio": "^1.1.0",
+    "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-tabs": "^1.1.0",
+    "@react-three/drei": "^9.112.0",
+    "@react-three/fiber": "^8.17.7",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.5.4",
+    "groq-sdk": "^0.7.0",
+    "lucide-react": "^0.439.0",
+    "myportfolio": "file:",
     "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-type-animation": "^3.2.0",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.168.0",
+    "typewriter-effect": "^2.21.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.2",
