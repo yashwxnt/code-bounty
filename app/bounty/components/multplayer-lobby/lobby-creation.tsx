@@ -63,7 +63,7 @@ const LobbyCreationPage: React.FC = () => {
       
       {/* Header */}
       <div className="w-full px-8 py-4 flex justify-between items-center bg-black bg-opacity-50 shadow-lg absolute top-0 backdrop-blur-md z-10">
-        <h1 className="text-xl font-extrabold text-purple-400 tracking-wider">Game Lobby</h1>
+        <h1 className="text-xl font-extrabold text-purple-400 tracking-wider">CodeBounty</h1>
         <Button onClick={handleBackClick} className="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-full shadow-lg transition-transform transform hover:scale-105">
           Back
         </Button>
@@ -72,21 +72,23 @@ const LobbyCreationPage: React.FC = () => {
       {/* Main Content */}
       <div className="w-full max-w-3xl p-12 mt-16 space-y-10 bg-white bg-opacity-10 shadow-2xl rounded-xl backdrop-blur-md border border-white border-opacity-30 transform hover:scale-105 transition-all duration-300">
         {/* Fun Animated Heading */}
-        <h1 className="text-4xl font-extrabold text-center text-pink-400 animate-pulse tracking-widest">
+        <h1 className="text-4xl font-extrabold text-center text-pink-400 font-brenet animate-pulse tracking-widest">
           Create or Join a Lobby
         </h1>
+
         
         {/* Create Lobby */}
         {!isLobbyCreated && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 px-5 rounded-full text-lg transition-transform transform hover:scale-110">
-                <span className="inline-flex items-center">
-                  <ClipboardCopy className="h-6 w-6 mr-2" /> Create Lobby
-                </span>
-              </Button>
+            <Button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 px-5 rounded-md text-lg transition-transform transform hover:scale-105 hover:bg-gradient-to-r from-purple-600 via-pink-500 to-red-500">
+              <span className="inline-flex items-center">
+                <ClipboardCopy className="h-6 w-6 mr-2" /> Create Lobby
+              </span>
+            </Button>
+
             </DialogTrigger>
-            <DialogContent className="bg-gray-800 text-white rounded-lg p-6 shadow-2xl border border-gray-600">
+            <DialogContent className=" rounded-lg p-6 shadow-2xl border border-gray-600">
               <DialogTitle className="text-2xl font-bold">Create a Lobby</DialogTitle>
               <LobbyForm onLobbyCreated={handleLobbyCreation} />
               <DialogClose asChild>

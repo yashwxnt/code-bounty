@@ -21,7 +21,9 @@ const JoinLobbyForm: React.FC<JoinLobbyFormProps> = ({ onJoinLobby }) => {
     <div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button>Join Lobby</Button>
+        <Button className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-6 rounded-lg text-xl shadow-lg transform transition-transform hover:scale-110 border-2 border-black border-opacity-50">
+          Join Lobby
+        </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogTitle>Join a Lobby</DialogTitle>
