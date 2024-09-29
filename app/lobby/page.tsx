@@ -1,10 +1,9 @@
 import React from 'react'
-import BLog from './components/blog'
-
+import MatchPage from './components/match'
 function Blog() {
   return (
     <div>
-        <BLog/>
+        <MatchPage/>
     </div>
   )
 }
