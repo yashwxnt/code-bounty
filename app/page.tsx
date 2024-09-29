@@ -1,116 +1,96 @@
-"use client"; // Ensure this component is client-side
-
+import React from "react";
 import Head from "next/head";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   return (
     <>
       <Head>
-        <title>Code Bounty</title>
+        <title>Bounty Code</title>
         <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&family=Jersey+Regular&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&family=Jersey&display=swap"
           rel="stylesheet"
         />
       </Head>
-      <div
-        style={{
-          margin: 0,
-          padding: 0,
-          boxSizing: 'border-box',
-          fontFamily: 'Roboto, sans-serif',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+      <div className="min-h-screen bg-gradient-to-b from-purple-600 to-indigo-900 text-white">
         {/* Header */}
-        <header
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '20px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'Jersey, sans-serif',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'white', // Keep the header text white
-            }}
-          >
-            Bounty Code
-          </div>
-          <nav
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px',
-            }}
-          >
-            <a
-              href="#"
-              style={{ textDecoration: 'none', color: 'white', fontWeight: 'bold' }}
-            >
-              Our Goal
-            </a>
-            <span style={{ color: 'white' }}>|</span>
-            <a
-              href="#"
-              style={{
-                backgroundColor: '#800080', // Purple
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                textDecoration: 'none',
-                fontWeight: 'bold',
-              }}
-            >
-              Log In / Sign Up
-            </a>
-          </nav>
+        <header className="py-8 text-center">
+          <h1 className="font-jersey text-6xl font-bold">Bounty Code</h1>
         </header>
 
         {/* Main Section */}
-        <main
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            textAlign: 'center',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          {/* Semi-transparent box for the text */}
-          <div style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Black with 50% transparency
-            padding: '20px',
-            borderRadius: '10px',
-            display: 'inline-block', // Make the box fit the text
-          }}>
-            <h1 style={{ fontSize: '32px', marginBottom: '20px', fontWeight: 'bold', color: 'white' }}>
+        <main className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">
               The new way to learn how to code while having fun.
-            </h1>
+            </h2>
+            <p className="text-xl">
+              Join our community of learners and start your coding journey today!
+            </p>
           </div>
-          <a
-            href="#"
-            style={{
-              backgroundColor: '#800080', // Purple
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              boxShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)', // Subtle shadow for the button
-            }}
-          >
-            Learn More
-          </a>
+
+          {/* Auth Tabs */}
+          <Card className="max-w-md mx-auto">
+            <Tabs defaultValue="login">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="forgot">Forgot</TabsTrigger>
+              </TabsList>
+              <TabsContent value="login">
+                <CardHeader>
+                  <CardTitle>Login</CardTitle>
+                  <CardDescription>Enter your credentials to access your account.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input type="email" placeholder="Email" />
+                  <Input type="password" placeholder="Password" />
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full">Login</Button>
+                </CardFooter>
+              </TabsContent>
+              <TabsContent value="signup">
+                <CardHeader>
+                  <CardTitle>Sign Up</CardTitle>
+                  <CardDescription>Create a new account to get started.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input type="text" placeholder="Username" />
+                  <Input type="email" placeholder="Email" />
+                  <Input type="password" placeholder="Password" />
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full">Sign Up</Button>
+                </CardFooter>
+              </TabsContent>
+              <TabsContent value="forgot">
+                <CardHeader>
+                  <CardTitle>Forgot Password</CardTitle>
+                  <CardDescription>Enter your email to reset your password.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input type="email" placeholder="Email" />
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full">Reset Password</Button>
+                </CardFooter>
+              </TabsContent>
+            </Tabs>
+          </Card>
+
+          {/* Get Started Button */}
+          <div className="text-center mt-12">
+            <Link href="/lobby" passHref>
+              <Button size="lg" className="bg-purple-700 hover:bg-purple-800">
+                Get Started
+              </Button>
+            </Link>
+          </div>
         </main>
       </div>
     </>
