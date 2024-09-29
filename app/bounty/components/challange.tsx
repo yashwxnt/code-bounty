@@ -1,16 +1,21 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Send, Trophy, Code, MessageSquare, Users, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Send, Code, MessageSquare, Users, Clock } from 'lucide-react';
 
 const ChallengePage = () => {
   const [gameState, setGameState] = useState({
@@ -20,14 +25,14 @@ const ChallengePage = () => {
   });
   const [challenges, setChallenges] = useState([]);
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [feedback, setFeedback] = useState(null);
   const [timeLeft, setTimeLeft] = useState(300);
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const chatContainerRef = useRef(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchChallenge();
@@ -57,14 +62,10 @@ const ChallengePage = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch challenges');
-      }
+      if (!response.ok) throw new Error('Failed to fetch challenges');
 
       const data = await response.json();
-      if (!data.challenges || !Array.isArray(data.challenges)) {
-        throw new Error('Invalid challenge data received');
-      }
+      if (!data.challenges || !Array.isArray(data.challenges)) throw new Error('Invalid challenge data received');
 
       setChallenges(data.challenges);
     } catch (error) {
@@ -73,9 +74,7 @@ const ChallengePage = () => {
     }
   };
 
-  const handleAnswerSelect = (index) => {
-    setSelectedAnswer(index);
-  };
+  const handleAnswerSelect = (index: number) => setSelectedAnswer(index);
 
   const handleSubmit = async () => {
     if (selectedAnswer === null) return;
@@ -89,25 +88,21 @@ const ChallengePage = () => {
         body: JSON.stringify({
           gameState: {
             ...gameState,
-            score: gameState.score + (selectedAnswer === challenges[currentChallengeIndex].correctAnswer ? 10 : 0),
+            score:
+              gameState.score +
+              (selectedAnswer === challenges[currentChallengeIndex].correctAnswer ? 10 : 0),
           },
           playerAction: 'submit_answer',
           selectedAnswer,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit answer');
-      }
+      if (!response.ok) throw new Error('Failed to submit answer');
 
       const data = await response.json();
       setFeedback(data.feedback);
 
-      if (currentChallengeIndex < challenges.length - 1) {
-        setCurrentChallengeIndex(currentChallengeIndex + 1);
-      } else {
-        console.log('Game complete');
-      }
+      setCurrentChallengeIndex((prevIndex) => (prevIndex < challenges.length - 1 ? prevIndex + 1 : prevIndex));
 
       setSelectedAnswer(null);
     } catch (error) {
@@ -134,9 +129,7 @@ const ChallengePage = () => {
           }),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to send message');
-        }
+        if (!response.ok) throw new Error('Failed to send message');
 
         const data = await response.json();
         setChatMessages((prevMessages) => [...prevMessages, { text: data.response, sender: 'AI' }]);
@@ -147,7 +140,7 @@ const ChallengePage = () => {
     }
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -187,7 +180,9 @@ const ChallengePage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold text-center mb-6">Debugging Adventure: {gameState.theme}</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Debugging Adventure: {gameState.theme}
+        </h1>
       </motion.div>
 
       <Tabs defaultValue="challenge" className="w-full">
@@ -207,7 +202,9 @@ const ChallengePage = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
-                <span className="text-2xl font-bold">Chapter {gameState.chapter}: Debug the Code</span>
+                <span className="text-2xl font-bold">
+                  Chapter {gameState.chapter}: Debug the Code
+                </span>
                 <Badge variant="secondary" className="text-xl font-bold px-3 py-1">
                   <Clock className="mr-2 h-4 w-4" />
                   {formatTime(timeLeft)}
@@ -229,7 +226,7 @@ const ChallengePage = () => {
                     whileTap={{ scale: 0.98 }}
                   >
                     <Button
-                      variant={selectedAnswer === index ? "default" : "outline"}
+                      variant={selectedAnswer === index ? 'default' : 'outline'}
                       className="w-full justify-start text-left"
                       onClick={() => handleAnswerSelect(index)}
                     >
@@ -238,92 +235,84 @@ const ChallengePage = () => {
                   </motion.div>
                 ))}
               </div>
-              <p className="mt-4 text-sm text-gray-600">Hint: {currentChallenge.hint}</p>
+              <p className="mt-4 text-sm text-gray-600">
+                Hint: {currentChallenge.hint}
+              </p>
             </CardContent>
             <CardFooter>
-              <Button 
-                className="w-full" 
-                onClick={handleSubmit} 
+              <Button
+                className="w-full"
+                onClick={handleSubmit}
                 disabled={selectedAnswer === null}
               >
                 Submit Answer
               </Button>
             </CardFooter>
           </Card>
-
-          <AnimatePresence>
-            {feedback && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert className="mt-4">
-                  {feedback.isCorrect ? (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <AlertTitle>Correct!</AlertTitle>
-                      <AlertDescription>{feedback.message}</AlertDescription>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-4 w-4 text-red-500" />
-                      <AlertTitle>Incorrect</AlertTitle>
-                      <AlertDescription>{feedback.message}</AlertDescription>
-                    </>
-                  )}
-                </Alert>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </TabsContent>
 
         <TabsContent value="chat">
-          <Card className="h-[400px]">
-            <CardContent className="flex flex-col h-full">
-              <ScrollArea className="flex-grow" ref={chatContainerRef}>
-                <div className="space-y-4">
-                  {chatMessages.map((message, index) => (
-                    <div key={index} className={`flex ${message.sender === 'AI' ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`p-2 rounded-lg ${message.sender === 'AI' ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}>
-                        <p>{message.text}</p>
-                      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Chat with Groq Assistant</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea
+                ref={chatContainerRef}
+                className="h-[300px] w-full rounded-md border p-4 bg-gray-100"
+              >
+                {chatMessages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      message.sender === 'You' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <div
+                      className={`rounded-lg p-2 mb-2 max-w-xs ${
+                        message.sender === 'You'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200'
+                      }`}
+                    >
+                      <p className="text-sm">{message.text}</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </ScrollArea>
-              <div className="mt-4 flex">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message..."
-                />
-                <Button variant="outline" className="ml-2" onClick={handleSendMessage}>
-                  <Send className="mr-2 h-4 w-4" /> Send
-                </Button>
-              </div>
             </CardContent>
+            <CardFooter className="space-x-2">
+              <Input
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <Button onClick={handleSendMessage} className="flex items-center">
+                <Send className="mr-2 h-4 w-4" /> Send
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
 
         <TabsContent value="leaderboard">
-          <Card className="h-[400px]">
+          <Card>
             <CardHeader>
               <CardTitle>Leaderboard</CardTitle>
             </CardHeader>
-            <CardContent>
-              {leaderboard.length === 0 ? (
-                <p>No leaderboard data yet.</p>
+            <CardContent className="space-y-4">
+              {leaderboard.length ? (
+                leaderboard.map((player, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-2 rounded-lg bg-gray-100"
+                  >
+                    <span className="font-bold">{player.name}</span>
+                    <Badge variant="secondary">{player.score} points</Badge>
+                  </div>
+                ))
               ) : (
-                <ul>
-                  {leaderboard.map((player, index) => (
-                    <li key={index} className="flex justify-between">
-                      <span>{player.name}</span>
-                      <span>{player.score} points</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-sm text-gray-600">No players on the leaderboard yet.</p>
               )}
             </CardContent>
           </Card>

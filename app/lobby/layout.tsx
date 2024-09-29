@@ -1,8 +1,12 @@
 import React from 'react'
+import MatchPage from './components/match'
 
 function layout() {
   return (
-    <div>layout</div>
+    <div>
+      <MatchPage/>
+
+    </div>
   )
 }
 
