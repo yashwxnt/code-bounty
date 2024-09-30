@@ -25,7 +25,7 @@ const CardWrapper = ({
     children,
 }: CardWrapperProps) => {
     return (
-        <Card className="xl:w-3/5 md:w-1/2 shadow-md bg-slate-200/20 backdrop-blur-sm border-none">
+        <Card className="xl:w-3/5 md:w-1/2 shadow-md bg-white border-none"> {/* Changed to bg-white */}
             <CardHeader>
                 <AuthHeader label={label} title={title} />
             </CardHeader>

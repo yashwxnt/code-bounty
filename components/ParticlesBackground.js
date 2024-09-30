@@ -1,14 +1,14 @@
 'use client';
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { useEffect, useState, useMemo } from "react";
-import { loadSlim } from "@tsparticles/slim";
+import { loadFull } from "tsparticles";
 
-const ParticlesComponent = (props) => {
+const ParticlesBackground = () => {
   const [init, setInit] = useState(false);
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
+      await loadFull(engine);
     }).then(() => {
       setInit(true);
     });
@@ -21,86 +21,132 @@ const ParticlesComponent = (props) => {
   const options = useMemo(() => ({
     background: {
       color: {
-        value: "#000000"
-      }
+        value: "#000000",
+      },
+      opacity: 1,
     },
-    fpsLimit: 60,
+    fullScreen: {
+      enable: true,
+      zIndex: 0,
+    },
+    fpsLimit: 120,
     interactivity: {
       detectsOn: "window",
       events: {
-        onClick: {
-          enable: false,
-          mode: "push"
-        },
-        onHover: {
+        resize: {
+          delay: 0.5,
           enable: true,
-          mode: "grab"
         },
-        resize: true
       },
-      modes: {
-        grab: {
-          distance: 140,
-          line_linked: {
-            opacity: 1
-          }
-        }
-      }
+      modes: {},
     },
     particles: {
+      color: {
+        value: "#fff",
+      },
+      move: {
+        direction: "right",
+        enable: true,
+        speed: 2,  // Slower movement for the dots
+        outModes: {
+          default: "out",
+        },
+      },
       number: {
-        value: 1000,
         density: {
           enable: true,
-          value_area: 800
-        }
-      },
-      color: {
-        value: ["#ffffff", "#000000"]
-      },
-      shape: {
-        type: "circle"
+          area: 1080,
+        },
+        value: 150,  // Number of dots
       },
       opacity: {
         value: 0.5,
-        random: true
+      },
+      shape: {
+        type: "circle",  // These are your dots
       },
       size: {
         value: 3,
-        random: true,
-        anim: {
-          enable: false,
-          speed: 40,
-          size_min: 0.1,
-          sync: false
-        }
       },
-      line_linked: {
-        enable: false
+      zIndex: {
+        value: 5,
       },
-      move: {
-        enable: true,
-        speed: 3, // Adjusted speed
-        direction: "none",
-        random: true,
-        straight: false,
-        out_mode: "out"
-      }
     },
-    detectRetina: true,
-    fullScreen: {
-      enable: true,
-      zIndex: 0
+    emitters: {
+      autoPlay: true,
+      fill: true,
+      life: {
+        wait: false,
+      },
+      rate: {
+        quantity: 1,
+        delay: 7,
+      },
+      shape: {
+        type: "square",
+      },
+      startCount: 0,
+      size: {
+        mode: "percent",
+        height: 0,
+        width: 0,
+      },
+      particles: {
+        shape: {
+          type: "image",
+          options: {
+            image: {
+              src: "https://particles.js.org/images/cyan_amongus.png",
+              width: 500,
+              height: 634,
+            },
+          },
+        },
+        size: {
+          value: 40,
+        },
+        move: {
+          speed: 10,
+          outModes: {
+            default: "none",
+            right: "destroy",
+          },
+          straight: true,
+        },
+        zIndex: {
+          value: 0,
+        },
+        rotate: {
+          value: {
+            min: 0,
+            max: 360,
+          },
+          animation: {
+            enable: true,
+            speed: 10,
+            sync: true,
+          },
+        },
+      },
+      position: {
+        x: -5,
+        y: 55,
+      },
     },
-    autoPlay: true,
-    backgroundMask: {
-      enable: false
-    },
-    duration: 0,
-    zIndex: 0
   }), []);
 
-  return <Particles id={props.id} init={particlesLoaded} options={options} />;
+  if (init) {
+    return (
+      <Particles
+        id="tsparticles"
+        options={options}
+        init={initParticlesEngine}
+        loaded={particlesLoaded}
+      />
+    );
+  }
+
+  return null;
 };
 
-export default ParticlesComponent;
+export default ParticlesBackground;

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
 import ChallengePage from './components/challange';
-import LobbyCreationPage from './components/multplayer-lobby/lobby-creation';
+import LobbyCreationPage from '../components/multplayer-lobby/lobby-creation';
 
 interface LobbySettings {
   difficulty: string;
@@ -10,7 +10,7 @@ interface LobbySettings {
   numberOfQuestions: number;
 }
 
-function Layout() {
+export default function Home() {
   const [isLobbyCreated, setIsLobbyCreated] = useState(false);
   const [lobbyCode, setLobbyCode] = useState('');
   const [lobbySettings, setLobbySettings] = useState<LobbySettings>({
@@ -27,22 +27,14 @@ function Layout() {
   };
 
   return (
-    <div>
-      <header>
-        <h1>Debugging Adventure</h1>
-      </header>
-      <main>
-        {isLobbyCreated ? (
-          <ChallengePage 
-            lobbyCode={lobbyCode} 
-            lobbySettings={lobbySettings} 
-          />
-        ) : (
-          <LobbyCreationPage onLobbyCreated={handleLobbyCreated} />
-        )}
+    <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <div className="w-full px-8 py-4 flex justify-between items-center bg-black bg-opacity-50 shadow-lg absolute top-0 backdrop-blur-md z-10">
+        <h1 className="text-xl font-extrabold text-purple-400 tracking-wider">CodeBounty</h1>
+      </div>
+      <main className="flex-grow p-4">
+        <ChallengePage />
       </main>
     </div>
   );
 }
-
-export default Layout;

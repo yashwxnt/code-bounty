@@ -18,8 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-      {/* <ParticlesBackground /> */}
-        {children}
+        <ParticlesBackground />
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );
