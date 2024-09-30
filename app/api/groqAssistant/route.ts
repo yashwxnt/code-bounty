@@ -54,60 +54,38 @@ export async function POST(req: Request) {
         const lobbyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         return NextResponse.json({ message: 'Lobby created successfully', lobbyCode });
 
-        case 'fetch_challenges':
-          if (!settings || !settings.numberOfQuestions || !settings.difficulty) {
-            console.error('Invalid or missing settings for fetch_challenges');
-            return NextResponse.json({ error: 'Invalid or missing settings for fetch_challenges' }, { status: 400 });
-          }
-        
-          const promptTemplate = SYSTEM_PROMPT
-            .replace('{numberOfQuestions}', settings.numberOfQuestions.toString())
-            .replace('{difficulty}', settings.difficulty);
-        
-          const chatCompletion = await groq.chat.completions.create({
-            messages: [
-              { role: 'system', content: promptTemplate },
-              { role: 'user', content: 'Generate the challenges as specified.' },
-            ],
-            model: 'mixtral-8x7b-32768',
-            temperature: 0.7,
-            max_tokens: 2000, // Increased to accommodate more challenges
-          });
-        
-          const aiResponse = chatCompletion.choices[0]?.message?.content;
-          if (!aiResponse) {
-            throw new Error('No response from AI');
-          }
-        
-          const challenges = parseAIResponse(aiResponse);
-          return NextResponse.json({ challenges });
+       case 'fetch_challenges':
+  if (!settings || !settings.numberOfQuestions || !settings.difficulty) {
+    console.error('Invalid or missing settings for fetch_challenges');
+    return NextResponse.json({ error: 'Invalid or missing settings for fetch_challenges' }, { status: 400 });
+  }
 
-          case 'submit_answer':
-            if (!body.selectedAnswer || !body.currentChallengeIndex || body.score === undefined) {
-              return NextResponse.json({ error: 'Missing required data for answer submission' }, { status: 400 });
-            }
-          
-            const { selectedAnswer, currentChallengeIndex, score } = body;
-            const currentChallenge = challenges[currentChallengeIndex];
-            
-            let newScore = score;
-            let feedback = '';
-            
-            if (selectedAnswer === currentChallenge.correctAnswer) {
-              newScore += 10; // or whatever point value you want to assign
-              feedback = 'Correct! Great job!';
-            } else {
-              feedback = 'Incorrect. The correct answer was: ' + currentChallenge.options[currentChallenge.correctAnswer];
-            }
-          
-            const isLastChallenge = currentChallengeIndex === challenges.length - 1;
-            
-            return NextResponse.json({ 
-              feedback, 
-              newScore, 
-              isLastChallenge,
-              message: isLastChallenge ? `Congratulations! You've completed all challenges. Your final score is ${newScore}.` : 'Answer submitted successfully'
-            });
+  const promptTemplate = SYSTEM_PROMPT
+    .replace('{numberOfQuestions}', settings.numberOfQuestions.toString())
+    .replace('{difficulty}', settings.difficulty);
+
+  const chatCompletion = await groq.chat.completions.create({
+    messages: [
+      { role: 'system', content: promptTemplate },
+      { role: 'user', content: 'Generate the challenges as specified.' },
+    ],
+    model: 'mixtral-8x7b-32768',
+    temperature: 0.7,
+    max_tokens: 2000, // Increased to accommodate more challenges
+  });
+
+  const aiResponse = chatCompletion.choices[0]?.message?.content;
+  if (!aiResponse) {
+    throw new Error('No response from AI');
+  }
+
+  const challenges = parseAIResponse(aiResponse);
+  return NextResponse.json({ challenges });
+      case 'submit_answer':
+        // Handle submit_answer action
+        // You'll need to implement the logic for handling answer submission
+        return NextResponse.json({ message: 'Answer submitted successfully' });
+
       case 'chat':
         // Handle chat action
         // You'll need to implement the logic for handling chat messages
@@ -123,7 +101,6 @@ export async function POST(req: Request) {
   }
 }
 
-// Helper function to parse AI response
 function parseAIResponse(response: string) {
   const challengeRegex = /---START CHALLENGE---([\s\S]*?)---END CHALLENGE---/g;
   const challenges = [...response.matchAll(challengeRegex)].map(match => match[1].trim());
