@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from 'framer-motion'; // Correctly import motion from framer-motion
 
 export default function Home() {
   return (
@@ -19,27 +18,17 @@ export default function Home() {
           rel="stylesheet"
         />
       </Head>
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-indigo-700 to-blue-500 text-white overflow-hidden">
-        {/* Header with animation */}
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-indigo-700 to-black-700 text-white overflow-hidden animate-gradient">
+        {/* Header */}
         <header className="py-8 text-center relative z-10">
-          <motion.h1
-            className="font-bold text-6xl md:text-7xl lg:text-8xl"
-            initial={{ opacity: 0, y: -50 }} // Initial state
-            animate={{ opacity: 1, y: 0 }} // Animate to this state
-            transition={{ duration: 0.5 }} // Animation duration
-          >
-            <a>Bounty Code</a>
-          </motion.h1>
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-600 drop-shadow-lg">
+            Bounty Code
+          </h1>
         </header>
 
         {/* Main Section */}
         <main className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="max-w-2xl mx-auto text-center mb-12"
-            initial={{ opacity: 0, scale: 0.5 }} // Initial state
-            animate={{ opacity: 1, scale: 1 }} // Animate to this state
-            transition={{ duration: 0.5 }} // Animation duration
-          >
+          <div className="max-w-2xl mx-auto text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">
               Learn to code with fun challenges!
             </h2>
@@ -57,7 +46,7 @@ export default function Home() {
                 <Heart size={40} />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Auth Tabs */}
           <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md border-none">
@@ -70,13 +59,13 @@ export default function Home() {
               <TabsContent value="login">
                 <CardHeader>
                   <CardTitle>Login</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
+                  <CardDescription className="text-white">
                     Enter your credentials to access your account.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
-                  <Input type="password" placeholder="Password" className="bg-white/30" />
+                  <Input type="email" placeholder="Email" className="bg-white/30 placeholder-white" />
+                  <Input type="password" placeholder="Password" className="bg-white/30 placeholder-white" />
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full bg-purple-700 hover:bg-purple-800">Login</Button>
@@ -85,14 +74,14 @@ export default function Home() {
               <TabsContent value="signup">
                 <CardHeader>
                   <CardTitle>Sign Up</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
+                  <CardDescription className="text-white">
                     Create a new account to get started.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Input type="text" placeholder="Username" className="bg-white/30" />
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
-                  <Input type="password" placeholder="Password" className="bg-white/30" />
+                  <Input type="text" placeholder="Username" className="bg-white/30 placeholder-white" />
+                  <Input type="email" placeholder="Email" className="bg-white/30 placeholder-white" />
+                  <Input type="password" placeholder="Password" className="bg-white/30 placeholder-white" />
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full bg-purple-700 hover:bg-purple-800">Sign Up</Button>
@@ -101,12 +90,12 @@ export default function Home() {
               <TabsContent value="forgot">
                 <CardHeader>
                   <CardTitle>Forgot Password</CardTitle>
-                  <CardDescription className="text-white"> {/* Changed to white */}
+                  <CardDescription className="text-white">
                     Enter your email to reset your password.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Input type="email" placeholder="Email" className="bg-white/30" />
+                  <Input type="email" placeholder="Email" className="bg-white/30 placeholder-white" />
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full bg-purple-700 hover:bg-purple-800">Reset Password</Button>
@@ -117,7 +106,7 @@ export default function Home() {
 
           {/* Get Started Button */}
           <div className="text-center mt-12">
-            <Link href="/lobby" passHref>
+            <Link href="/bounty" passHref>
               <Button size="lg" className="bg-purple-700 hover:bg-purple-800 text-xl px-8 py-6">
                 Get Started
                 <Rocket className="ml-2" size={24} />
@@ -134,6 +123,25 @@ export default function Home() {
           </footer>
         </main>
       </div>
+
+      {/* Add the following CSS for dynamic background */}
+      <style jsx>{`
+        @keyframes gradient {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        .animate-gradient {
+          animation: gradient 15s ease infinite;
+          background-size: 300% 300%;
+        }
+      `}</style>
     </>
   );
 }

@@ -2,56 +2,92 @@ import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
 const groq = new Groq({
-  apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 const SYSTEM_PROMPT = `
-You are an AI assistant for a portfolio website. Your task is to guide visitors through the portfolio based on their interests and background. Tailor your responses to whether they are a recruiter, developer, student, or general visitor. Suggest relevant sections of the portfolio to explore.
+You are the AI game master for "Debugging Adventure: A Kahoot-style Game". Your task is to present debugging challenges within a storyline where players are coders trying to fix broken code to save their team from a coding disaster.
 
-Available sections:
-- #projects: Showcase of completed projects
-- #skills: List of technical skills and competencies
-- #blog: Technical blog posts and articles
-- #about: Personal information and background
-- #contact: Contact information and form
+Provide responses in the following format:
+Storyline: [Brief storyline for the current challenge]
+Code: [The broken code snippet to debug]
+Options:
+1. [First option to fix the code]
+2. [Second option to fix the code]
+3. [Third option to fix the code]
+4. [Fourth option to fix the code]
+Hint: [A helpful hint for the current challenge]
+CorrectAnswer: [Number of the correct option (1-4)]
 
-Provide concise, friendly responses and always suggest a relevant section to visit.
+Theme: [Current story theme, e.g., space mission, rescue mission]
 `;
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json() as { conversation: Array<{ role: string; content: string }> };
+  console.log('API route hit');
 
-    if (!body.conversation || body.conversation.length === 0) {
-      return NextResponse.json({ error: 'No conversation provided' }, { status: 400 });
+  try {
+    const body = await req.json() as {
+      gameState: {
+        chapter: number;
+        score: number;
+        theme: string;
+      };
+      playerAction: string;
+    };
+
+    console.log('Received body:', body);
+
+    if (!body.gameState || !body.playerAction) {
+      return NextResponse.json({ error: 'Invalid game state or player action' }, { status: 400 });
     }
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        ...body.conversation
+        { role: 'user', content: JSON.stringify(body) }
       ],
       model: 'mixtral-8x7b-32768',
       temperature: 0.7,
-      max_tokens: 150,
+      max_tokens: 500,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || 'No response';
-    
-    // Simple parsing for navigation suggestion
-    let navigation = '';
-    if (aiResponse.includes('#projects')) navigation = '#projects';
-    else if (aiResponse.includes('#skills')) navigation = '#skills';
-    else if (aiResponse.includes('#blog')) navigation = '#blog';
-    else if (aiResponse.includes('#about')) navigation = '#about';
-    else if (aiResponse.includes('#contact')) navigation = '#contact';
+    const aiResponse = chatCompletion.choices[0]?.message?.content;
+    if (!aiResponse) {
+      throw new Error('No response from AI');
+    }
 
-    return NextResponse.json({
-      response: aiResponse,
-      navigation: navigation
-    });
+    console.log('AI Response:', aiResponse);
+
+    // Parse the AI response manually
+    const parseAIResponse = (response: string) => {
+      const lines = response.split('\n');
+      const challenge: any = {};
+      let currentKey = '';
+      
+      lines.forEach(line => {
+        if (line.includes(':')) {
+          const [key, value] = line.split(':');
+          currentKey = key.trim().toLowerCase();
+          challenge[currentKey] = value.trim();
+        } else if (currentKey === 'options') {
+          if (!challenge[currentKey]) challenge[currentKey] = [];
+          challenge[currentKey].push(line.trim().replace(/^\d+\.\s*/, ''));
+        } else if (line.trim() !== '') {
+          challenge[currentKey] += ' ' + line.trim();
+        }
+      });
+
+      challenge.correctAnswer = parseInt(challenge.correctanswer) - 1;
+      delete challenge.correctanswer;
+
+      return challenge;
+    };
+
+    const challenge = parseAIResponse(aiResponse);
+
+    return NextResponse.json({ challenges: [challenge] });
   } catch (error) {
     console.error('Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch AI response' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process game action' }, { status: 500 });
   }
 }
